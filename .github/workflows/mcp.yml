@@ -1,4 +1,4 @@
-name: MCP Repository Setup
+name: GitHub Repository Setup
 
 on:
   push:
@@ -11,38 +11,34 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Setup MCP
-        uses: microsoft/mcp-action@v1
+      - name: Setup GitHub Repository
+        uses: actions/github-script@v6
         with:
-          repository: YT-Data-Extractor
-          visibility: public
-          description: "Extensión para extraer datos de YouTube"
-          topics: youtube,data-extraction,chrome-extension
-          license: MIT
-          readme: |
-            # YT Data Extractor
-
-            Una extensión de Chrome para extraer datos de YouTube de manera eficiente.
-
-            ## Características
-
-            - Extracción de datos de videos de YouTube
-            - Interfaz intuitiva
-            - Exportación de datos en múltiples formatos
-
-            ## Instalación
-
-            1. Clona este repositorio
-            2. Abre Chrome y ve a `chrome://extensions/`
-            3. Activa el "Modo desarrollador"
-            4. Haz clic en "Cargar descomprimida" y selecciona la carpeta de la extensión
-
-            ## Uso
-
-            1. Navega a cualquier video de YouTube
-            2. Haz clic en el icono de la extensión
-            3. Los datos se extraerán automáticamente
-
-            ## Licencia
-
-            MIT License 
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const readme = fs.readFileSync('./README.md', 'utf8');
+            
+            // Actualizar información del repositorio
+            await github.rest.repos.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: "yt-data-extractor",
+              description: "Extensión de Chrome para extraer transcripciones y descripciones de videos de YouTube fácilmente",
+              homepage: "https://carlosrodera.com",
+              has_issues: true,
+              has_projects: true,
+              has_wiki: true,
+              is_template: false,
+              topics: [
+                "youtube",
+                "data-extraction",
+                "chrome-extension",
+                "transcript",
+                "description",
+                "video-analysis",
+                "content-creator-tools"
+              ]
+            });
+            
+            console.log('Repositorio actualizado correctamente');
