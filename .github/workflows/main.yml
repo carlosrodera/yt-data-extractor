@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Validate Extension Structure
+        run: |
+          echo "Validating extension structure..."
+          test -f manifest.json && echo "✓ manifest.json exists" || exit 1
+          test -f popup.html && echo "✓ popup.html exists" || exit 1
+          test -f popup.js && echo "✓ popup.js exists" || exit 1
+          test -f content.js && echo "✓ content.js exists" || exit 1
+          test -f background.js && echo "✓ background.js exists" || exit 1
+          test -d icons && echo "✓ icons directory exists" || exit 1
+          echo "All validation checks passed!"
