@@ -9,16 +9,25 @@
 <body>
   <div class="container">
     <div class="header">
+      <div class="top-bar">
+        <div class="language-flags">
+          <button id="lang-es" class="lang-flag" title="Español">
+            <img src="icons/flag-es.png" alt="Spanish">
+          </button>
+          <button id="lang-en" class="lang-flag" title="English">
+            <img src="icons/flag-en.png" alt="English">
+          </button>
+        </div>
+        <div class="theme-toggle">
+          <label class="switch">
+            <input type="checkbox" id="theme-switch">
+            <span class="slider round"></span>
+          </label>
+          <span id="theme-icon">🌙</span>
+        </div>
+      </div>
       <h1 id="extension-title">YouTube Data Extractor</h1>
       <p id="subtitle" class="subtitle">Select an option:</p>
-      
-      <div class="language-selector">
-        <label id="language-label" for="language-select">Language:</label>
-        <select id="language-select">
-          <option value="en" selected>English</option>
-          <option value="es">Español</option>
-        </select>
-      </div>
     </div>
     
     <div class="actions">
@@ -82,6 +91,14 @@
       </div>
       <div class="result-content">
         <textarea id="extracted-text" readonly></textarea>
+      </div>
+    </div>
+    
+    <!-- Footer con branding -->
+    <div class="footer">
+      <div class="branding">
+        <p><span id="developed-by">Developed by</span> <a href="https://carlosrodera.com" target="_blank" rel="noopener noreferrer">Carlos Rodera</a></p>
+        <p><a href="https://carlosrodera.com/tools" target="_blank" rel="noopener noreferrer" id="more-tools">More tools</a></p>
       </div>
     </div>
   </div>

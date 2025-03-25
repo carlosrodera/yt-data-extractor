@@ -40,10 +40,9 @@ const translations = {
     withTimestampsSuffix: " con timestamps",
     description: "descripcion",
     
-    // Selector de idioma
-    language: "Idioma:",
-    spanish: "Español",
-    english: "Inglés"
+    // Footer y branding
+    developedBy: "Desarrollado por",
+    moreTools: "Más herramientas"
   },
   en: {
     // Title and headers
@@ -85,10 +84,9 @@ const translations = {
     withTimestampsSuffix: " with timestamps",
     description: "description",
     
-    // Language selector
-    language: "Language:",
-    spanish: "Spanish",
-    english: "English"
+    // Footer and branding
+    developedBy: "Developed by",
+    moreTools: "More tools"
   }
 };
 

@@ -9,24 +9,76 @@ document.addEventListener('DOMContentLoaded', function() {
   const extractedText = document.getElementById('extracted-text');
   const copyBtn = document.getElementById('copy-btn');
   const downloadBtn = document.getElementById('download-btn');
-  const languageSelect = document.getElementById('language-select');
+  const langSpanish = document.getElementById('lang-es');
+  const langEnglish = document.getElementById('lang-en');
+  const themeSwitch = document.getElementById('theme-switch');
+  const themeIcon = document.getElementById('theme-icon');
   
   // Almacenamiento para los datos extraídos
   let extractedData = null;
   
   // Inicializar el idioma
   let currentLanguage = localStorage.getItem('yt-data-extractor-language') || 'en';
-  languageSelect.value = currentLanguage;
+  
+  // Inicializar el tema
+  let isDarkMode = localStorage.getItem('yt-data-extractor-theme') === 'dark';
+  
+  // Aplicar el tema inicial
+  if (isDarkMode) {
+    document.body.classList.add('dark-mode');
+    themeSwitch.checked = true;
+    themeIcon.textContent = '☀️';
+  } else {
+    document.body.classList.remove('dark-mode');
+    themeSwitch.checked = false;
+    themeIcon.textContent = '🌙';
+  }
+  
+  // Resaltar la bandera del idioma activo
+  updateActiveFlagStyle();
   
   // Aplicar las traducciones iniciales
   applyTranslations();
   
-  // Escuchar cambios en el selector de idioma
-  languageSelect.addEventListener('change', function() {
-    currentLanguage = this.value;
+  // Escuchar clics en las banderas de idioma
+  langSpanish.addEventListener('click', function() {
+    currentLanguage = 'es';
     localStorage.setItem('yt-data-extractor-language', currentLanguage);
+    updateActiveFlagStyle();
     applyTranslations();
   });
+  
+  langEnglish.addEventListener('click', function() {
+    currentLanguage = 'en';
+    localStorage.setItem('yt-data-extractor-language', currentLanguage);
+    updateActiveFlagStyle();
+    applyTranslations();
+  });
+  
+  // Escuchar cambios en el switch de tema
+  themeSwitch.addEventListener('change', function() {
+    isDarkMode = this.checked;
+    if (isDarkMode) {
+      document.body.classList.add('dark-mode');
+      themeIcon.textContent = '☀️';
+      localStorage.setItem('yt-data-extractor-theme', 'dark');
+    } else {
+      document.body.classList.remove('dark-mode');
+      themeIcon.textContent = '🌙';
+      localStorage.setItem('yt-data-extractor-theme', 'light');
+    }
+  });
+  
+  // Función para actualizar el estilo de las banderas según el idioma activo
+  function updateActiveFlagStyle() {
+    if (currentLanguage === 'es') {
+      langSpanish.classList.add('active');
+      langEnglish.classList.remove('active');
+    } else {
+      langEnglish.classList.add('active');
+      langSpanish.classList.remove('active');
+    }
+  }
   
   // Función para aplicar las traducciones según el idioma seleccionado
   function applyTranslations() {
@@ -45,8 +97,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('copy-text').textContent = t.copyButton;
     document.getElementById('download-text').textContent = t.downloadButton;
     
-    // Selector de idioma
-    document.getElementById('language-label').textContent = t.language;
+    // Footer
+    document.getElementById('developed-by').textContent = t.developedBy;
+    document.getElementById('more-tools').textContent = t.moreTools;
     
     // Si hay un título de resultado activo, actualizarlo también
     if (resultContainer.style.display !== 'none' && extractedData) {
