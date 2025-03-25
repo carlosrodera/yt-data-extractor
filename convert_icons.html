@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Convertir SVG a PNG</title>
+</head>
+<body>
+  <h1>Convertidor de Iconos SVG a PNG</h1>
+  <p>Esta página te ayudará a convertir los iconos SVG a PNG para usar en la extensión.</p>
+  
+  <div>
+    <h2>Icon 16x16</h2>
+    <img id="svg16" src="icons/icon16.svg" width="16" height="16">
+    <canvas id="canvas16" width="16" height="16" style="border:1px solid black;"></canvas>
+    <p><a id="download16" href="#" download="icon16.png">Descargar PNG 16x16</a></p>
+  </div>
+  
+  <div>
+    <h2>Icon 48x48</h2>
+    <img id="svg48" src="icons/icon48.svg" width="48" height="48">
+    <canvas id="canvas48" width="48" height="48" style="border:1px solid black;"></canvas>
+    <p><a id="download48" href="#" download="icon48.png">Descargar PNG 48x48</a></p>
+  </div>
+  
+  <div>
+    <h2>Icon 128x128</h2>
+    <img id="svg128" src="icons/icon128.svg" width="128" height="128">
+    <canvas id="canvas128" width="128" height="128" style="border:1px solid black;"></canvas>
+    <p><a id="download128" href="#" download="icon128.png">Descargar PNG 128x128</a></p>
+  </div>
+  
+  <script>
+    function convertSvgToPng(svgElement, canvasElement, downloadElement) {
+      // Esperar a que se cargue la imagen SVG
+      svgElement.onload = function() {
+        const ctx = canvasElement.getContext('2d');
+        ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        ctx.drawImage(svgElement, 0, 0, canvasElement.width, canvasElement.height);
+        
+        // Actualizar el enlace de descarga
+        downloadElement.href = canvasElement.toDataURL('image/png');
+      };
+    }
+    
+    // Convertir cada tamaño de icono
+    convertSvgToPng(
+      document.getElementById('svg16'), 
+      document.getElementById('canvas16'),
+      document.getElementById('download16')
+    );
+    
+    convertSvgToPng(
+      document.getElementById('svg48'), 
+      document.getElementById('canvas48'),
+      document.getElementById('download48')
+    );
+    
+    convertSvgToPng(
+      document.getElementById('svg128'), 
+      document.getElementById('canvas128'),
+      document.getElementById('download128')
+    );
+  </script>
+</body>
+</html>
