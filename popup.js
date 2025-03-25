@@ -1,20 +1,79 @@
 document.addEventListener('DOMContentLoaded', function() {
   console.log('Popup cargado');
   
+  // Elementos de la interfaz
   const statusElement = document.getElementById('status');
-  const statusTextElement = document.querySelector('.status-text');
+  const statusTextElement = document.getElementById('status-text');
   const resultContainer = document.getElementById('result-container');
   const resultTitle = document.getElementById('result-title');
   const extractedText = document.getElementById('extracted-text');
   const copyBtn = document.getElementById('copy-btn');
   const downloadBtn = document.getElementById('download-btn');
+  const languageSelect = document.getElementById('language-select');
   
-  let extractedData = null; // Para almacenar los datos extraídos
+  // Almacenamiento para los datos extraídos
+  let extractedData = null;
+  
+  // Inicializar el idioma
+  let currentLanguage = localStorage.getItem('yt-data-extractor-language') || 'en';
+  languageSelect.value = currentLanguage;
+  
+  // Aplicar las traducciones iniciales
+  applyTranslations();
+  
+  // Escuchar cambios en el selector de idioma
+  languageSelect.addEventListener('change', function() {
+    currentLanguage = this.value;
+    localStorage.setItem('yt-data-extractor-language', currentLanguage);
+    applyTranslations();
+  });
+  
+  // Función para aplicar las traducciones según el idioma seleccionado
+  function applyTranslations() {
+    const t = translations[currentLanguage];
+    
+    // Títulos y subtítulos
+    document.getElementById('extension-title').textContent = t.extensionTitle;
+    document.getElementById('subtitle').textContent = t.selectOption;
+    document.getElementById('transcription-section').textContent = t.transcriptionHeader;
+    document.getElementById('description-section').textContent = t.descriptionHeader;
+    
+    // Textos de botones
+    document.getElementById('with-timestamps-text').textContent = t.withTimestamps;
+    document.getElementById('without-timestamps-text').textContent = t.withoutTimestamps;
+    document.getElementById('extract-description-text').textContent = t.extractDescription;
+    document.getElementById('copy-text').textContent = t.copyButton;
+    document.getElementById('download-text').textContent = t.downloadButton;
+    
+    // Selector de idioma
+    document.getElementById('language-label').textContent = t.language;
+    
+    // Si hay un título de resultado activo, actualizarlo también
+    if (resultContainer.style.display !== 'none' && extractedData) {
+      updateResultTitle();
+    }
+  }
+  
+  // Función para actualizar el título del resultado según el tipo de contenido
+  function updateResultTitle() {
+    const t = translations[currentLanguage];
+    
+    if (extractedData.type === 'transcript') {
+      resultTitle.textContent = extractedData.withTimestamps ? 
+        t.transcriptionWithTimestamps : 
+        t.transcriptionWithoutTimestamps;
+    } else if (extractedData.type === 'description') {
+      resultTitle.textContent = t.videoDescription;
+    } else {
+      resultTitle.textContent = t.extractedContent;
+    }
+  }
   
   // Función para mostrar mensajes de estado
-  function showStatus(message, type = 'info') {
+  function showStatus(messageKey, type = 'info', extraText = '') {
+    const t = translations[currentLanguage];
     statusElement.className = `status ${type}`;
-    statusTextElement.textContent = message;
+    statusTextElement.textContent = t[messageKey] + extraText;
     
     // Si es éxito o error, ocultarlo después de un tiempo
     if (type === 'success' || type === 'error') {
@@ -29,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentTab = tabs[0];
     
     if (!currentTab.url.includes('youtube.com/watch')) {
-      showStatus('Esta extensión solo funciona en páginas de videos de YouTube', 'error');
+      showStatus('onlyYouTube', 'error');
       document.querySelectorAll('.actions button').forEach(btn => btn.disabled = true);
       return;
     }
@@ -39,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Manejar el caso donde el content script no responda (probablemente no se ha cargado)
       if (chrome.runtime.lastError) {
         console.log("Error de comunicación:", chrome.runtime.lastError.message);
-        showStatus('Por favor, recarga la página o abre una nueva pestaña de YouTube para activar la extensión', 'error');
+        showStatus('reloadRequired', 'error');
         document.querySelectorAll('.actions button').forEach(btn => btn.disabled = true);
       }
     });
@@ -63,10 +122,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (extractedText.value) {
       navigator.clipboard.writeText(extractedText.value)
         .then(() => {
-          showStatus('Contenido copiado al portapapeles', 'success');
+          showStatus('copiedToClipboard', 'success');
         })
         .catch(err => {
-          showStatus('Error al copiar: ' + err.message, 'error');
+          showStatus('copiedError', 'error', err.message);
         });
     }
   });
@@ -78,14 +137,16 @@ document.addEventListener('DOMContentLoaded', function() {
       const blob = new Blob([extractedData.text], {type: 'text/plain'});
       const url = URL.createObjectURL(blob);
       
+      const t = translations[currentLanguage];
+      
       // Generar nombre de archivo según el tipo de contenido
       let fileName = '';
       if (extractedData.type === 'transcript') {
-        fileName = `${sanitizeFileName(extractedData.title)} - transcripcion${extractedData.withTimestamps ? ' con timestamps' : ''}.txt`;
+        fileName = `${sanitizeFileName(extractedData.title)} - ${t.transcript}${extractedData.withTimestamps ? t.withTimestampsSuffix : ''}.txt`;
       } else if (extractedData.type === 'description') {
-        fileName = `${sanitizeFileName(extractedData.title)} - descripcion.txt`;
+        fileName = `${sanitizeFileName(extractedData.title)} - ${t.description}.txt`;
       } else {
-        fileName = `contenido-youtube.txt`;
+        fileName = `${sanitizeFileName(extractedData.title)}.txt`;
       }
       
       // Crear un enlace temporal y hacer clic en él para descargar
@@ -101,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
         URL.revokeObjectURL(url);
       }, 100);
       
-      showStatus(`Archivo guardado como "${fileName}"`, 'success');
+      showStatus('fileSavedAs', 'success', `"${fileName}"`);
     }
   });
   
@@ -111,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function() {
     resultContainer.style.display = 'none';
     
     // Mostrar estado de carga
-    showStatus(`Extrayendo transcripción ${withTimestamps ? 'con' : 'sin'} marcas de tiempo...`, 'info');
+    showStatus(withTimestamps ? 'extractingWithTimestamps' : 'extractingWithoutTimestamps', 'info');
     
     // Deshabilitar botones mientras se procesa
     document.querySelectorAll('.actions button').forEach(btn => btn.disabled = true);
@@ -125,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Manejar posibles errores de comunicación
             if (chrome.runtime.lastError) {
               console.log("Error al enviar mensaje:", chrome.runtime.lastError.message);
-              showStatus('Error de comunicación. Intenta recargar la página', 'error');
+              showStatus('communicationError', 'error');
               document.querySelectorAll('.actions button').forEach(btn => btn.disabled = false);
               return;
             }
@@ -134,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
         );
       } catch (error) {
         console.error("Error al ejecutar la extracción:", error);
-        showStatus(`Error: ${error.message}`, 'error');
+        showStatus('extractionError', 'error', error.message);
         document.querySelectorAll('.actions button').forEach(btn => btn.disabled = false);
       }
     });
@@ -146,7 +207,7 @@ document.addEventListener('DOMContentLoaded', function() {
     resultContainer.style.display = 'none';
     
     // Mostrar estado de carga
-    showStatus('Extrayendo descripción del video...', 'info');
+    showStatus('extractingDescription', 'info');
     
     // Deshabilitar botones mientras se procesa
     document.querySelectorAll('.actions button').forEach(btn => btn.disabled = true);
@@ -160,7 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Manejar posibles errores de comunicación
             if (chrome.runtime.lastError) {
               console.log("Error al enviar mensaje:", chrome.runtime.lastError.message);
-              showStatus('Error de comunicación. Intenta recargar la página', 'error');
+              showStatus('communicationError', 'error');
               document.querySelectorAll('.actions button').forEach(btn => btn.disabled = false);
               return;
             }
@@ -169,7 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
         );
       } catch (error) {
         console.error("Error al ejecutar la extracción:", error);
-        showStatus(`Error: ${error.message}`, 'error');
+        showStatus('extractionError', 'error', error.message);
         document.querySelectorAll('.actions button').forEach(btn => btn.disabled = false);
       }
     });
@@ -195,13 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
         extractedData = message.data;
         
         // Configurar el título según el tipo de contenido
-        if (message.type === 'transcript' || extractedData.type === 'transcript') {
-          resultTitle.textContent = `Transcripción${extractedData.withTimestamps ? ' con marcas de tiempo' : ''}`;
-        } else if (message.type === 'description' || extractedData.type === 'description') {
-          resultTitle.textContent = 'Descripción del video';
-        } else {
-          resultTitle.textContent = 'Contenido extraído';
-        }
+        updateResultTitle();
         
         // Mostrar la transcripción/descripción en el textarea
         extractedText.value = extractedData.text;
@@ -210,9 +265,15 @@ document.addEventListener('DOMContentLoaded', function() {
         resultContainer.style.display = 'flex';
         
         // Mostrar mensaje de éxito
-        showStatus(`${resultTitle.textContent} extraída con éxito`, 'success');
+        const successText = resultTitle.textContent + translations[currentLanguage].extractionSuccess;
+        statusElement.className = 'status success';
+        statusTextElement.textContent = successText;
+        
+        setTimeout(() => {
+          statusElement.className = 'status';
+        }, 5000);
       } else {
-        showStatus(`Error: ${message.error || 'No se pudo extraer el contenido'}`, 'error');
+        showStatus('extractionError', 'error', message.error || '');
       }
     }
   });

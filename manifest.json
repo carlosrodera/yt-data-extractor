@@ -1,9 +1,10 @@
 {
   "manifest_version": 3,
   "name": "YT Data Extractor",
-  "version": "1.0",
-  "description": "Extrae transcripciones y descripciones de videos de YouTube fácilmente",
-  "permissions": ["activeTab", "scripting", "clipboardWrite", "downloads"],
+  "version": "1.1",
+  "description": "Extract transcriptions and descriptions from YouTube videos easily | Extrae transcripciones y descripciones de videos de YouTube fácilmente",
+  "default_locale": "en",
+  "permissions": ["activeTab", "scripting", "clipboardWrite", "downloads", "storage"],
   "host_permissions": ["https://*.youtube.com/*"],
   "action": {
     "default_popup": "popup.html",
